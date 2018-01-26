@@ -16,6 +16,14 @@ public class TimeSpend {
 
     private long endTime;
 
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
     @Override
     public String toString() {
         return "" + startTime +

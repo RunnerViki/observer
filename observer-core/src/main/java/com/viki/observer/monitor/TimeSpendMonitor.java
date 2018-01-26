@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +56,11 @@ public class TimeSpendMonitor implements Monitor {
             Enumeration<String> rootKeys = InvokeMap.getRootKeys();
             String key;
             File logFile = new File(Thread.currentThread().getContextClassLoader().getResource("").getPath() + File.separator + "logFile.log");
+            if(!logFile.getParentFile().exists()){
+                logFile.getParentFile().mkdirs();
+            }
             if(!logFile.exists()){
+//                logFile.createNewFile();
                 Files.createFile(logFile.toPath());
             }
             System.out.println(logFile.getPath());

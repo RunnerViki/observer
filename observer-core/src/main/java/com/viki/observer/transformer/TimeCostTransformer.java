@@ -37,7 +37,7 @@ public class TimeCostTransformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
 
         className = className.replace("/", ".");
-        if(null == className || !className.startsWith(targetPackage) || className.contains("$")){
+        if(null == className){
             return null;
         }
         CtClass cc;
@@ -47,15 +47,18 @@ public class TimeCostTransformer implements ClassFileTransformer {
             return null;
         }
         try{
+            if(!className.startsWith(targetPackage) || className.contains("$")){
+                return cc.toBytecode();
+            }
             if((cc.getModifiers() & AccessFlag.ABSTRACT) == AccessFlag.ABSTRACT){
                 return cc.toBytecode();
             }
-
             Arrays.stream(cc.getDeclaredMethods())
                     .filter(method -> (method.getModifiers() & AccessFlag.STATIC) != AccessFlag.STATIC && (method.getModifiers() & AccessFlag.ABSTRACT) != AccessFlag.ABSTRACT)
                     .forEach(
                             method -> {
                                 try {
+//                                    System.out.println(method.getLongName());
                                     method.addLocalVariable("startTime", CtClass.longType);
                                     method.addLocalVariable("endTime", CtClass.longType);
                                     method.addLocalVariable("currentClassName", ClassPool.getDefault().get(String.class.getName()));
@@ -68,7 +71,7 @@ public class TimeCostTransformer implements ClassFileTransformer {
                                     method.addLocalVariable("timeSpendStatisticsStrategy", ClassPool.getDefault().get("com.viki.observer.strategy.TimeSpendStatisticsStrategy"));
                                     method.addLocalVariable("invokeTree", ClassPool.getDefault().get("com.viki.observer.common.bean.InvokeTree"));
                                     method.addLocalVariable("stackTrace", ClassPool.getDefault().get(StackTraceElement.class.getName()+"[]"));
-                                    method.insertBefore("startTime = System.currentTimeMillis();\n" +
+                                    method.insertBefore("startTime = System.nanoTime();\n" +
                                             "                 currentClassName = \"\";\n" +
                                             "                 timeSpendMonitor = com.viki.observer.monitor.TimeSpendMonitor.getInstance();\n" +
                                             "                 timeSpendStatisticsStrategy = new com.viki.observer.strategy.TimeSpendStatisticsStrategy(timeSpendMonitor);\n" +
@@ -92,7 +95,7 @@ public class TimeCostTransformer implements ClassFileTransformer {
                                             "                   grandParentMethodName = stackTrace[3].getMethodName();\n" +
                                             "               }" +
                                             "");
-                                    method.insertAfter("endTime = System.currentTimeMillis();\n" +
+                                    method.insertAfter("endTime = System.nanoTime();\n" +
                                             "               invokeTree = com.viki.observer.common.bean.InvokeMap.getOrCreate(grandParentClassName, grandParentMethodName, parentClassName, parentMethodName, currentClassName, currentMethodName);"+
                                             "               timeSpendStatisticsStrategy = (com.viki.observer.strategy.TimeSpendStatisticsStrategy)invokeTree.addObserverStrategy(\""+transformerName+"\", timeSpendStatisticsStrategy);" +
                                             "               timeSpendStatisticsStrategy.add(startTime, endTime);"
