@@ -54,7 +54,7 @@ public class TimeCostTransformer implements ClassFileTransformer {
                 return cc.toBytecode();
             }
             Arrays.stream(cc.getDeclaredMethods())
-                    .filter(method -> (method.getModifiers() & AccessFlag.STATIC) != AccessFlag.STATIC && (method.getModifiers() & AccessFlag.ABSTRACT) != AccessFlag.ABSTRACT)
+//                    .filter(method -> (method.getModifiers() & AccessFlag.STATIC) != AccessFlag.STATIC)
                     .forEach(
                             method -> {
                                 try {
@@ -98,7 +98,7 @@ public class TimeCostTransformer implements ClassFileTransformer {
                                     method.insertAfter("endTime = System.nanoTime();\n" +
                                             "               invokeTree = com.viki.observer.common.bean.InvokeMap.getOrCreate(grandParentClassName, grandParentMethodName, parentClassName, parentMethodName, currentClassName, currentMethodName);"+
                                             "               timeSpendStatisticsStrategy = (com.viki.observer.strategy.TimeSpendStatisticsStrategy)invokeTree.addObserverStrategy(\""+transformerName+"\", timeSpendStatisticsStrategy);" +
-                                            "               timeSpendStatisticsStrategy.add(startTime, endTime);"
+                                            "               timeSpendStatisticsStrategy.add(startTime, endTime, Thread.currentThread().getId());"
                                     );
                                 } catch (Exception e) {
                                     e.printStackTrace();

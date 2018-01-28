@@ -80,9 +80,9 @@ public class TimeSpendMonitor implements Monitor {
         try{
             if(invokeTree.getAbstractObserverStrategySet() != null){
                 Collection<AbstractObserverStrategy> values = invokeTree.getAbstractObserverStrategySet().values();
-                values.stream().forEach(observerStrategy -> {
-                    observerStrategy.getItems().stream().forEachOrdered(item -> {
-                        stringBuilder.append((invokeTree.getParentNode() != null ? invokeTree.getParentNode().toString() : "" )+ ","+ invokeTree.toString() + "," + item.toString() + "\n");
+                values.parallelStream().forEach(observerStrategy -> {
+                    observerStrategy.getItems().parallelStream().forEach(item -> {
+                        stringBuilder.append((invokeTree.getParentNode() != null ? invokeTree.getParentNode().toString() : "") + "," + invokeTree.toString() + "," + item.toString() + "\n");
                     });
                     observerStrategy.clear();
                 });

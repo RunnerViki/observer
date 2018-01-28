@@ -15,8 +15,8 @@ public class TimeSpendStatisticsStrategy extends AbstractObserverStrategy<TimeSp
         super(monitor);
     }
 
-    public void add(long startTime, long endTime){
-        items.add(new TimeSpend(startTime, endTime));
+    public void add(long startTime, long endTime, long threadId){
+        items.add(new TimeSpend(startTime, endTime, threadId));
     }
 
 
