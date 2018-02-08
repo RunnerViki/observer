@@ -47,63 +47,60 @@ public class TimeCostTransformer implements ClassFileTransformer {
             return null;
         }
         try{
-            if(!className.startsWith(targetPackage) || className.contains("$")){
+            /*if((cc.getModifiers() & AccessFlag.ABSTRACT) == AccessFlag.ABSTRACT){
                 return cc.toBytecode();
-            }
-            if((cc.getModifiers() & AccessFlag.ABSTRACT) == AccessFlag.ABSTRACT){
-                return cc.toBytecode();
-            }
+            }*/
             Arrays.stream(cc.getDeclaredMethods())
 //                    .filter(method -> (method.getModifiers() & AccessFlag.STATIC) != AccessFlag.STATIC)
                     .forEach(
-                            method -> {
-                                try {
+                        method -> {
+                            try {
 //                                    System.out.println(method.getLongName());
-                                    method.addLocalVariable("startTime", CtClass.longType);
-                                    method.addLocalVariable("endTime", CtClass.longType);
-                                    method.addLocalVariable("currentClassName", ClassPool.getDefault().get(String.class.getName()));
-                                    method.addLocalVariable("currentMethodName", ClassPool.getDefault().get(String.class.getName()));
-                                    method.addLocalVariable("parentClassName", ClassPool.getDefault().get(String.class.getName()));
-                                    method.addLocalVariable("parentMethodName", ClassPool.getDefault().get(String.class.getName()));
-                                    method.addLocalVariable("grandParentClassName", ClassPool.getDefault().get(String.class.getName()));
-                                    method.addLocalVariable("grandParentMethodName", ClassPool.getDefault().get(String.class.getName()));
-                                    method.addLocalVariable("timeSpendMonitor", ClassPool.getDefault().get("com.viki.observer.monitor.TimeSpendMonitor"));
-                                    method.addLocalVariable("timeSpendStatisticsStrategy", ClassPool.getDefault().get("com.viki.observer.strategy.TimeSpendStatisticsStrategy"));
-                                    method.addLocalVariable("invokeTree", ClassPool.getDefault().get("com.viki.observer.common.bean.InvokeTree"));
-                                    method.addLocalVariable("stackTrace", ClassPool.getDefault().get(StackTraceElement.class.getName()+"[]"));
+                                method.addLocalVariable("startTime", CtClass.longType);
+                                method.addLocalVariable("endTime", CtClass.longType);
+                                method.addLocalVariable("currentClassName", ClassPool.getDefault().get(String.class.getName()));
+                                method.addLocalVariable("currentMethodName", ClassPool.getDefault().get(String.class.getName()));
+                                method.addLocalVariable("parentClassName", ClassPool.getDefault().get(String.class.getName()));
+                                method.addLocalVariable("parentMethodName", ClassPool.getDefault().get(String.class.getName()));
+                                method.addLocalVariable("grandParentClassName", ClassPool.getDefault().get(String.class.getName()));
+                                method.addLocalVariable("grandParentMethodName", ClassPool.getDefault().get(String.class.getName()));
+                                method.addLocalVariable("timeSpendMonitor", ClassPool.getDefault().get("com.viki.observer.monitor.TimeSpendMonitor"));
+                                method.addLocalVariable("timeSpendStatisticsStrategy", ClassPool.getDefault().get("com.viki.observer.strategy.TimeSpendStatisticsStrategy"));
+                                method.addLocalVariable("invokeTree", ClassPool.getDefault().get("com.viki.observer.common.bean.InvokeTree"));
+                                method.addLocalVariable("stackTrace", ClassPool.getDefault().get(StackTraceElement.class.getName()+"[]"));
                                     method.insertBefore("startTime = System.nanoTime();\n" +
-                                            "                 currentClassName = \"\";\n" +
-                                            "                 timeSpendMonitor = com.viki.observer.monitor.TimeSpendMonitor.getInstance();\n" +
-                                            "                 timeSpendStatisticsStrategy = new com.viki.observer.strategy.TimeSpendStatisticsStrategy(timeSpendMonitor);\n" +
-                                            "                 invokeTree = null;\n" +
-                                            "                 currentMethodName = \"\";\n" +
-                                            "                 parentClassName = \"\";\n" +
-                                            "                 parentMethodName = \"\";\n" +
-                                            "                 grandParentClassName = \"\";\n" +
-                                            "                 grandParentMethodName = \"\";\n" +
-                                            "                 stackTrace = Thread.currentThread().getStackTrace();\n" +
-                                            "                 if(stackTrace.length > 1){\n" +
-                                            "                   currentClassName = stackTrace[1].getClassName();\n" +
-                                            "                   currentMethodName = stackTrace[1].getMethodName();\n" +
-                                            "                 }\n" +
-                                            "               if(stackTrace.length > 2){\n" +
-                                            "                   parentClassName = stackTrace[2].getClassName();\n" +
-                                            "                   parentMethodName = stackTrace[2].getMethodName();\n" +
-                                            "               }" +
-                                            "               if(stackTrace.length > 3){\n" +
-                                            "                   grandParentClassName = stackTrace[3].getClassName();\n" +
-                                            "                   grandParentMethodName = stackTrace[3].getMethodName();\n" +
-                                            "               }" +
-                                            "");
+                                        "                 currentClassName = \"\";\n" +
+                                        "                 timeSpendMonitor = com.viki.observer.monitor.TimeSpendMonitor.getInstance();\n" +
+                                        "                 timeSpendStatisticsStrategy = new com.viki.observer.strategy.TimeSpendStatisticsStrategy(timeSpendMonitor);\n" +
+                                        "                 invokeTree = null;\n" +
+                                        "                 currentMethodName = \"\";\n" +
+                                        "                 parentClassName = \"\";\n" +
+                                        "                 parentMethodName = \"\";\n" +
+                                        "                 grandParentClassName = \"\";\n" +
+                                        "                 grandParentMethodName = \"\";\n" +
+                                        "                 stackTrace = Thread.currentThread().getStackTrace();\n" +
+                                        "                 if(stackTrace.length > 1){\n" +
+                                        "                   currentClassName = stackTrace[1].getClassName();\n" +
+                                        "                   currentMethodName = stackTrace[1].getMethodName();\n" +
+                                        "                 }\n" +
+                                        "               if(stackTrace.length > 2){\n" +
+                                        "                   parentClassName = stackTrace[2].getClassName();\n" +
+                                        "                   parentMethodName = stackTrace[2].getMethodName();\n" +
+                                        "               }" +
+                                        "               if(stackTrace.length > 3){\n" +
+                                        "                   grandParentClassName = stackTrace[3].getClassName();\n" +
+                                        "                   grandParentMethodName = stackTrace[3].getMethodName();\n" +
+                                        "               }" +
+                                        "");
                                     method.insertAfter("endTime = System.nanoTime();\n" +
-                                            "               invokeTree = com.viki.observer.common.bean.InvokeMap.getOrCreate(grandParentClassName, grandParentMethodName, parentClassName, parentMethodName, currentClassName, currentMethodName);"+
-                                            "               timeSpendStatisticsStrategy = (com.viki.observer.strategy.TimeSpendStatisticsStrategy)invokeTree.addObserverStrategy(\""+transformerName+"\", timeSpendStatisticsStrategy);" +
+                                        "               invokeTree = com.viki.observer.common.bean.InvokeMap.getOrCreate(grandParentClassName, grandParentMethodName, parentClassName, parentMethodName, currentClassName, currentMethodName);"+
+                                        "               timeSpendStatisticsStrategy = (com.viki.observer.strategy.TimeSpendStatisticsStrategy)invokeTree.addObserverStrategy(\""+transformerName+"\", timeSpendStatisticsStrategy);" +
                                             "               timeSpendStatisticsStrategy.add(startTime, endTime, Thread.currentThread().getId());"
-                                    );
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                                );
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
+                        }
                     );
             return cc.toBytecode();
         }catch (Exception e){
